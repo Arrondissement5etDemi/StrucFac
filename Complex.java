@@ -52,6 +52,12 @@ public class Complex {
 		return result;
 	}
 
+	/**The constant 1*/
+	public static final Complex one() {
+		Complex result = new Complex(1.0,0.0);
+		return result;
+	}
+
 	//arithmetic
 	public Complex conjugate() {
 		Complex result = new Complex(re,-im);

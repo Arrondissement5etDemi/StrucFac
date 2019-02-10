@@ -5,35 +5,56 @@ public class StrucFac {
 	public static double pi = Math.PI;
 
 	public static void main(String[] args) {
-		double[][] skpoi = new double[401][2]; 
-		double[][] sampleSk = new double[401][2];
-		int numSample = 500;
-		
+			double[][] sk = new double[801][2]; 
+			double[][] sampleSk = new double[801][2];
+			int numSample = 1;
+			
 		for (int m = 0; m < numSample; m++) {
-			Cell poi = PointProcess.poisson1D(160,160.0);
-			sampleSk = strucFacReport(poi);
-			for (int i = 0; i < skpoi.length; i++) {
-                 	       skpoi[i][1] = skpoi[i][1] + sampleSk[i][1];
+			Cell pp = PointProcess.triangle2D(3600,60.0);
+			sampleSk = strucFacReport2D(pp);
+			for (int i = 0; i < sk.length; i++) {
+                 	       sk[i][1] = sk[i][1] + sampleSk[i][1];
                 	}
 		}
 
-		for (int i = 0; i < skpoi.length; i++) {
-			skpoi[i][0] = sampleSk[i][0];
-			skpoi[i][1] = skpoi[i][1]/(double)numSample;
-			System.out.println(skpoi[i][0]+" "+skpoi[i][1]);
+		for (int i = 0; i < sk.length; i++) {
+			sk[i][0] = sampleSk[i][0];
+			sk[i][1] = sk[i][1]/(double)numSample;
+			System.out.println(sk[i][0]+" "+sk[i][1]);
 		}
 	}
 
 	/**generates the table of s(k) for various k in 1D
  * 	@param c Cell, which specifies the configuration of the particles
- * 	@return double[][], the report table of s(k), where k is reported as multiples of pi */
-	public static double[][] strucFacReport(Cell c) {
+ * 	@return double[][], the table of s(k), where k is in multiples of pi */
+	public static double[][] strucFacReport1D(Cell c) {
 		double[][] result = new double[401][2];
 		Vector3D k = new Vector3D(0.0,0.0,0.0);
-                for (int i = 0; i <= 400; i++) {
-			result[i][0] = (double)i*0.01;
+		for (int i = 0; i <= 400; i++) {
+                        result[i][0] = (double)i*0.01;
                         k.setX(result[i][0]*pi);
                         result[i][1] = sk(c,k);
+                }
+                return result;
+	}
+
+	/**generates the table of ANGULAR AVERAGED s(k) for various k in 2D
+ * 	@param c Cell, which specifies the configuration of the particles
+ * 	@return double[][], the table of s(k), where k is reported as multiples of pi */
+	public static double[][] strucFacReport2D(Cell c) {
+		double[][] result = new double[801][2];
+		Vector3D k = new Vector3D(0.0,0.0,0.0);
+		double angle, length;
+                for (int i = 0; i <= 800; i++) {
+			length = (double)i*0.01*pi;
+			result[i][0] = length/pi;
+			for (int j = 0; j < 200; j++) {
+				angle = (double)j*0.01*pi;//run angle from 0 to 2pi
+				k.setX(length*Math.cos(angle));
+				k.setY(length*Math.sin(angle));
+                        	result[i][1] = result[i][1] + sk(c,k);
+			}
+			result[i][1] = result[i][1]/200.0;
                 }
 		return result;
 	}
