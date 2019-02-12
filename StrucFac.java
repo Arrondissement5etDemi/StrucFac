@@ -10,8 +10,13 @@ public class StrucFac {
 			int numSample = 1;
 			
 		for (int m = 0; m < numSample; m++) {
-			Cell pp = PointProcess.triangle2D(3600,60.0);
-			sampleSk = strucFacReport2D(pp);
+			Cell pp = PointProcess.triangle2D(900,30.0);
+			Vector3D k11 = new Vector3D(2*pi,2*pi,0);
+			double[][] ppPlot = strucFac2D(pp,161);//for the 3D plot of s(k) where k is in 2D
+			for (int i = 0; i < ppPlot.length; i++) {
+				System.out.println(ppPlot[i][0]+","+ppPlot[i][1]+","+ppPlot[i][2]);
+			}
+			sampleSk = strucFacReport2D(pp);//for angular average
 			for (int i = 0; i < sk.length; i++) {
                  	       sk[i][1] = sk[i][1] + sampleSk[i][1];
                 	}
@@ -37,10 +42,35 @@ public class StrucFac {
                 }
                 return result;
 	}
-
+	
+	/**generates the s(k) value for the vector k in a 2D plane (6pi*6pi)
+ * 	@param c Cell, which specifies the configuration of the particles
+ * 	@param plotRange int, how many data on the side of box
+ * 	@return double[][], the table of s(k), where k is a Vector3D with z = 0 */
+  	public static double[][] strucFac2D(Cell c, int plotRange) {
+		int plotSize = plotRange*plotRange;
+		double[][] result = new double[plotSize][3];
+		Vector3D k = new Vector3D(0.0,0.0,0.0);
+		double x, y;
+		int index = 0;
+		for (int i = 0; i < plotRange; i++) {
+			x = i*(1.0/20.0)*pi;
+			k.setX(x);
+			for (int j = 0; j < plotRange; j++) {
+				y = j*(1.0/20.0)*pi;
+				k.setY(y);
+				result[index][0] = x/pi;
+				result[index][1] = y/pi;
+				result[index][2] = sk(c,k); 
+				index++;
+			}
+		}
+		return result;
+  	}
+ 
 	/**generates the table of ANGULAR AVERAGED s(k) for various k in 2D
  * 	@param c Cell, which specifies the configuration of the particles
- * 	@return double[][], the table of s(k), where k is reported as multiples of pi */
+ * 	@return double[][], the table of angular averaged s(k), where k is reported as multiples of pi */
 	public static double[][] strucFacReport2D(Cell c) {
 		double[][] result = new double[801][2];
 		Vector3D k = new Vector3D(0.0,0.0,0.0);
@@ -48,8 +78,8 @@ public class StrucFac {
                 for (int i = 0; i <= 800; i++) {
 			length = (double)i*0.01*pi;
 			result[i][0] = length/pi;
-			for (int j = 0; j < 200; j++) {
-				angle = (double)j*0.01*pi;//run angle from 0 to 2pi
+			for (int j = 0; j < 400; j++) {
+				angle = (double)j*0.005*pi;//run angle from 0 to 2pi
 				k.setX(length*Math.cos(angle));
 				k.setY(length*Math.sin(angle));
                         	result[i][1] = result[i][1] + sk(c,k);
