@@ -14,5 +14,5 @@
 module load openmpi
 
 srun cd /home/hainaw/StrucFac
-javac StrucFac.java
-java StrucFac
+javac SkHardSphere.java
+java SkHardSphere

@@ -81,6 +81,6 @@ public class Vector3D {
 	}
 
 	public String toString() {
-		return "(" + Double.toString(x) + "," + Double.toString(y) + ',' + Double.toString(z) + ")";
+		return Double.toString(x) + "," + Double.toString(y) + ',' + Double.toString(z);
 	}
 }

@@ -2,6 +2,46 @@ import java.util.*;
 
 /**This is a class that contains functions that generate various point patterns for 1,2,3 dimensions*/
 public class PointProcess {
+
+	
+	/**geneartes a Cell with 3D equilibrium hard sphere configuration
+ * 	@param cubicRootN int, the cubic root of the number of particles
+ * 	@param phi double, the volume fraction
+ * 	@return Cell, a equilibrium 3D hard sphere configuration */
+	public static Cell hardSphere3D(int cubicRootN, double phi) {
+		int n = cubicRootN * cubicRootN * cubicRootN;
+		Cell result = cubeLattice(cubicRootN,1);
+		double diam = Math.pow(6.0*phi/(Math.PI*(double)n),1.0/3.0);//diam of the spheres
+		result.setDiam(diam);
+		int totalTime = 500000;
+		for (int i = 0; i < totalTime; i++) {
+			result.move(0.003);
+		}
+		return result;
+	}	
+
+	/**generates a Cell of square lattice in 3D 
+ * 	@param partiPerSide int, particles per side
+ *	@param l double, side length of the unit cell
+ *	@return Cell, a cubic lattice with the defined particle per side */
+	public static Cell cubeLattice(int partiPerSide, double l) {
+		double increment = l/(double)partiPerSide;
+		int n = (int)Math.pow(partiPerSide,3);
+		Particle[] pa = new Particle[n];
+		Cell result = new Cell(n,l);
+		int index = 0;
+		for (int i = 0; i < partiPerSide; i++) {
+			for (int j = 0; j < partiPerSide; j++) {
+				for (int k = 0; k < partiPerSide; k++) {
+					pa[index]= new Particle(i*increment,j*increment,k*increment);
+					index++;
+				} 
+			}
+		}
+		result.setPartiArr(pa);
+		return result;
+	}
+
 	/**generates a 2D triangular lattice
  * 	@param n int, the number of particles in the unit cell
  * 	@param l double, the unit cell side length. The cell axes are 60 deg apart: (1,0) and (1/2, sqrt(3)/2)
