@@ -1,8 +1,37 @@
 import java.util.*;
 
 /**This is a class that contains functions that generate various point patterns for 1,2,3 dimensions*/
+	
 public class PointProcess {
 
+	/**generates a 3D ideal gas
+ *	@param cubicRootN int, the cubic root of number of particles
+ *      @param l double, the unit cell length
+ *      @return Cell, a ideal gas Cell with n particles in 3D */
+        public static Cell poisson3D(int cubicRootN, double l) {
+		int n = cubicRootN * cubicRootN * cubicRootN;
+                Cell c = new Cell(n,l);
+                Particle[] pa = new Particle[n];
+                double x,y,z;
+                for (int i = 0; i < n; i++) {
+                        x = getRandomNumberInRange(0.0,l);
+                        y = getRandomNumberInRange(0.0,l);
+			z = getRandomNumberInRange(0.0,l);
+                        pa[i] = new Particle(x,y,z);
+                }
+                c.setPartiArr(pa);
+                return c;
+        }
+
+
+	/**generates a Cell with 3D equilibrium HS config starting from another equil HS config
+ * 	@param equil Cell, a Cell that already has 3D HS equilibrium config */
+	public static void newHS(Cell equil) {
+		int totalTime = 100000;
+		for (int i = 0; i < totalTime; i++) {
+                        equil.move(0.003);
+                }
+	}
 	
 	/**geneartes a Cell with 3D equilibrium hard sphere configuration
  * 	@param cubicRootN int, the cubic root of the number of particles
@@ -13,7 +42,7 @@ public class PointProcess {
 		Cell result = cubeLattice(cubicRootN,1);
 		double diam = Math.pow(6.0*phi/(Math.PI*(double)n),1.0/3.0);//diam of the spheres
 		result.setDiam(diam);
-		int totalTime = 500000;
+		int totalTime = 1000000;
 		for (int i = 0; i < totalTime; i++) {
 			result.move(0.003);
 		}

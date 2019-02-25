@@ -5,15 +5,32 @@ public class SkHardSphere {
 	public static double pi = Math.PI;
 
 	public static void main(String[] args) {
-		double[][] sk = new double[401][2]; 
-		double[][] sampleSk = new double[401][2];
-		double[][] g2 = new double[400][2];
-		double[][] sampleG2 = new double[401][2];
-		int numSample = 20;
-			
+		double[][] sk = new double[601][2]; 
+		double[][] sampleSk = new double[601][2];
+		//double[][] skIdeal = new double[201][2];
+		//double[][] sampleSkIdeal = new double[201][2];
+		double[][] g2 = new double[200][2];
+		double[][] sampleG2 = new double[200][2];
+		int numSample = 200;
+		/**treating ideal gas*/
+		//for (int m = 0; m < numSample; m++) {
+		//	Cell ig = PointProcess.poisson3D(10,1);
+		//	sampleSkIdeal = strucFacReport3D(ig);
+		//	for (int i = 0; i < skIdeal.length; i++) {
+                //               skIdeal[i][1] = skIdeal[i][1] + sampleSkIdeal[i][1];
+                //        }
+		//	System.out.println(m+" ig");
+		//}
+		//for (int i = 0; i < skIdeal.length; i++) {
+		//	skIdeal[i][0] = sampleSkIdeal[i][0];
+                //        skIdeal[i][1] = skIdeal[i][1]/(double)numSample;
+		//	System.out.println(skIdeal[i][0]+" "+skIdeal[i][1]);
+		//}
+		/**end treating ideal gas; now treating hard sphere equilbrium*/
+		Cell pp = PointProcess.hardSphere3D(10,0.2);
 		for (int m = 0; m < numSample; m++) {
-			Cell pp = PointProcess.hardSphere3D(12,0.2);
-			//sampleG2 = RadialStat.g2(pp,100,4);
+			PointProcess.newHS(pp);
+			//sampleG2 = RadialStat.g2(pp,50,4);
 			sampleSk = strucFacReport3D(pp);
 			for (int i = 0; i < sk.length; i++) {
                                sk[i][1] = sk[i][1] + sampleSk[i][1];
@@ -81,18 +98,33 @@ public class SkHardSphere {
 	public static double[][] strucFacReport2D(Cell c) {
 		double[][] result = new double[801][2];
 		Vector3D k = new Vector3D(0.0,0.0,0.0);
-		double angle, length;
-                for (int i = 0; i <= 800; i++) {
-			length = (double)i*0.01*pi;
-			result[i][0] = length/pi;
-			for (int j = 0; j < 400; j++) {
-				angle = (double)j*0.005*pi;//run angle from 0 to 2pi
-				k.setX(length*Math.cos(angle));
-				k.setY(length*Math.sin(angle));
-                        	result[i][1] = result[i][1] + sk(c,k);
-			}
-			result[i][1] = result[i][1]/400.0;
+		double length = 0;
+		double kMini = 2*pi/c.getSideLength();//the length of the smallest meaningful k		
+		
+		double n = 0;
+                for (int i = 0; i <= result.length; i++) {
+			boolean meaningfulN = false;
+                        int multiplicityN = 0;
+			 while (! meaningfulN) {
+                                n++;
+                                length = Math.sqrt(n)*kMini;
+                                int searchRange = (int)Math.floor(length);
+                                for (int jx = -searchRange; jx <= searchRange; jx++) {
+                                for (int jy = -searchRange; jy <= searchRange; jy++) {
+                                        if (jx*jx + jy*jy == n) {
+                                                meaningfulN = true;
+                                                k.setX(kMini*jx);
+                                                k.setY(kMini*jy);
+                                                result[i][1]=result[i][1] + sk(c,k);
+                                                multiplicityN++;
+                                        }
+                                }
+                                }
+                        }
+			result[i][0] = length;
+                        result[i][1] = result[i][1]/multiplicityN;
                 }
+
 		return result;
 	}
 
@@ -100,19 +132,38 @@ public class SkHardSphere {
  *      @param c Cell, which specifies the configuration of the particles
  *      @return double[][], the table of sphere averaged s(k), where k is reported as multiples of pi */
         public static double[][] strucFacReport3D(Cell c) {
-                double[][] result = new double[401][2];
+                double[][] result = new double[601][2];
                 Vector3D k = new Vector3D(0.0,0.0,0.0);
-                double length;
+                double length = 0;
 		double diam = c.getDiam();
+		double kMini = 2*pi/c.getSideLength();//the length of the smallest meaningful k
+
+		double n = 0;
                 for (int i = 0; i < result.length; i++) {
-                        length = (double)i*0.05/diam;
+			boolean meaningfulN = false;
+			int multiplicityN = 0;
+			while (! meaningfulN) {
+				n++;
+				length = Math.sqrt(n)*kMini;
+				int searchRange = (int)Math.floor(length);			
+				for (int jx = -searchRange; jx <= searchRange; jx++) {
+				for (int jy = -searchRange; jy <= searchRange; jy++) {
+				for (int jz = -searchRange; jz <= searchRange; jz++) {
+					if (jx*jx + jy*jy + jz*jz == n) {
+						meaningfulN = true;
+						k.setX(kMini*jx);
+						k.setY(kMini*jy);
+						k.setZ(kMini*jz);
+						result[i][1]=result[i][1] + sk(c,k);
+						multiplicityN++;
+					}
+				}
+				}	
+				}
+			}
                         result[i][0] = length*diam;
-                        for (int j = 0; j < 500; j++) {
-                                k = SphereSampling.uniform(length);
-                                result[i][1] = result[i][1] + sk(c,k);
-                        }
-                        result[i][1] = result[i][1]/500.0;
-                }
+                        result[i][1] = result[i][1]/multiplicityN;
+               	}
                 return result;
         }
 

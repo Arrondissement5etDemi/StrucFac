@@ -7,15 +7,15 @@ public class StrucFac {
 	public static void main(String[] args) {
 			double[][] sk = new double[801][2]; 
 			double[][] sampleSk = new double[801][2];
-			int numSample = 1;
+			int numSample = 200;
 			
 		for (int m = 0; m < numSample; m++) {
-			Cell pp = PointProcess.triangle2D(900,30.0);
-			Vector3D k11 = new Vector3D(2*pi,2*pi,0);
-			double[][] ppPlot = strucFac2D(pp,161);//for the 3D plot of s(k) where k is in 2D
-			for (int i = 0; i < ppPlot.length; i++) {
-				System.out.println(ppPlot[i][0]+","+ppPlot[i][1]+","+ppPlot[i][2]);
-			}
+			Cell pp = PointProcess.poisson2D(900,10);
+			//Vector3D k11 = new Vector3D(2*pi,2*pi,0);
+			//double[][] ppPlot = strucFac2D(pp,161);//for the 3D plot of s(k) where k is in 2D
+			//for (int i = 0; i < ppPlot.length; i++) {
+			//	System.out.println(ppPlot[i][0]+","+ppPlot[i][1]+","+ppPlot[i][2]);
+			//}
 			sampleSk = strucFacReport2D(pp);//for angular average
 			for (int i = 0; i < sk.length; i++) {
                  	       sk[i][1] = sk[i][1] + sampleSk[i][1];
@@ -67,27 +67,43 @@ public class StrucFac {
 		}
 		return result;
   	}
- 
+	
 	/**generates the table of ANGULAR AVERAGED s(k) for various k in 2D
- * 	@param c Cell, which specifies the configuration of the particles
- * 	@return double[][], the table of angular averaged s(k), where k is reported as multiples of pi */
-	public static double[][] strucFacReport2D(Cell c) {
-		double[][] result = new double[801][2];
-		Vector3D k = new Vector3D(0.0,0.0,0.0);
-		double angle, length;
-                for (int i = 0; i <= 800; i++) {
-			length = (double)i*0.01*pi;
-			result[i][0] = length/pi;
-			for (int j = 0; j < 400; j++) {
-				angle = (double)j*0.005*pi;//run angle from 0 to 2pi
-				k.setX(length*Math.cos(angle));
-				k.setY(length*Math.sin(angle));
-                        	result[i][1] = result[i][1] + sk(c,k);
-			}
-			result[i][1] = result[i][1]/200.0;
+*       @param c Cell, which specifies the configuration of the particles
+*       @return double[][], the table of angular averaged s(k), where k is reported as multiples of pi */
+        public static double[][] strucFacReport2D(Cell c) {
+                double[][] result = new double[801][2];
+                Vector3D k = new Vector3D(0.0,0.0,0.0);
+                double length = 0;
+                double kMini = 2*pi/c.getSideLength();//the length of the smallest meaningful k
+
+                double n = 0;
+                for (int i = 0; i < result.length; i++) {
+                        boolean meaningfulN = false;
+                        int multiplicityN = 0;
+                        while (! meaningfulN) {
+                                n++;
+                                length = Math.sqrt(n)*kMini;
+                                int searchRange = (int)Math.floor(Math.sqrt(n));
+                                for (int jx = -searchRange; jx <= searchRange; jx++) {
+                                for (int jy = -searchRange; jy <= searchRange; jy++) {
+                                        if (jx*jx + jy*jy == n) {
+                                                meaningfulN = true;
+                                                k.setX(kMini*jx);
+                                                k.setY(kMini*jy);
+                                                result[i][1]=result[i][1] + sk(c,k);
+                                                multiplicityN++;
+                                        }
+                                }
+                                }
+                        }
+                        result[i][0] = length;
+                        result[i][1] = result[i][1]/multiplicityN;
                 }
-		return result;
-	}
+
+                return result;
+        }
+ 
 
 	/**computes the structure factor s(k) for a Cell config
  * 	@param c Cell, which specifies the configuration of the particles
